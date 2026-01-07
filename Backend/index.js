@@ -44,6 +44,10 @@ app.get("/api/route", (req, res) => {
 })
 
 // ▶ Start server
+app.get("/", (req, res) => {
+  res.send("Backend is running 🚀")
+})
+
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Backend running on port ${PORT}`)
 })
