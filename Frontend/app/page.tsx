@@ -1,35 +1,81 @@
 "use client"
-import HeaderBar from "@/components/header-bar"
-import AlertsPanel from "@/components/alerts-panel"
-import HeatmapVisualization from "@/components/heatmap-visualization"
-import AmbulanceMap from "@/components/ambulance-map"
-import IncidentTimeline from "@/components/incident-timeline"
-import StatsOverview from "@/components/stats-overview"
 
-export default function Dashboard() {
+import { useEffect, useState } from "react"
+import api from "@/lib/api"
+
+type Alert = {
+  message: string
+  level?: string
+}
+
+type RoutePoint = {
+  lat: number
+  lng: number
+}
+
+export default function Page() {
+  const [alerts, setAlerts] = useState<Alert[]>([])
+  const [route, setRoute] = useState<RoutePoint[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const alertsResponse = await api.get("/alerts")
+        const routeResponse = await api.get("/route")
+
+        setAlerts(alertsResponse.data)
+        setRoute(routeResponse.data)
+      } catch (error) {
+        console.error("Failed to fetch data:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  if (loading) {
+    return <div className="p-6">Loading PANIC-AID dashboard...</div>
+  }
+
   return (
-    <div className="min-h-screen bg-background">
-      <HeaderBar />
+    <div className="p-6 space-y-6">
+      <h1 className="text-2xl font-bold">🚨 PANIC-AID Dashboard</h1>
 
-      <main className="p-4 md:p-6 max-w-7xl mx-auto">
-        {/* Stats Overview */}
-        <StatsOverview />
+      {/* Panic Alerts */}
+      <section>
+        <h2 className="text-xl font-semibold">Panic Alerts</h2>
+        {alerts.length === 0 ? (
+          <p className="text-gray-500">No active alerts</p>
+        ) : (
+          alerts.map((alert, index) => (
+            <div
+              key={index}
+              className="mt-2 p-3 border rounded bg-red-50"
+            >
+               {alert.message}
+            </div>
+          ))
+        )}
+      </section>
 
-        {/* Main Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-          {/* Left Column - Alerts and Timeline */}
-          <div className="lg:col-span-1 space-y-6">
-            <AlertsPanel />
-            <IncidentTimeline />
-          </div>
-
-          {/* Middle Column - Maps and Heatmap */}
-          <div className="lg:col-span-2 space-y-6">
-            <HeatmapVisualization />
-            <AmbulanceMap />
-          </div>
-        </div>
-      </main>
+      {/* Emergency Route */}
+      <section>
+        <h2 className="text-xl font-semibold">Emergency Route</h2>
+        {route.length === 0 ? (
+          <p className="text-gray-500">No route available</p>
+        ) : (
+          <ul className="list-disc ml-6">
+            {route.map((point, index) => (
+              <li key={index}>
+                Lat: {point.lat}, Lng: {point.lng}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   )
 }
