@@ -6,6 +6,10 @@ const PORT = 5000
 
 app.use(cors())
 app.use(express.json())
+app.get("/api/health", (req, res) => {
+  res.send("PANIC-AID backend is running")
+})
+
 
 //  Health check (very useful)
 app.get("/api/health", (req, res) => {
@@ -40,6 +44,8 @@ app.get("/api/route", (req, res) => {
 })
 
 // ▶ Start server
-app.listen(PORT, () => {
-  console.log(` Backend running at http://localhost:${PORT}`)
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Backend running on port ${PORT}`)
 })
+
+
