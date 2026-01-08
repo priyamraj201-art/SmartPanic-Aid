@@ -1,7 +1,7 @@
 import axios from "axios"
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  baseURL: "https://literate-trout-r4wv7579747cpxxq-5000.app.github.dev/api",
   headers: {
     "Content-Type": "application/json",
   },
