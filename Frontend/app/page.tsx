@@ -18,18 +18,16 @@ export default function Page() {
   const [route, setRoute] = useState<RoutePoint[]>([])
   const [loading, setLoading] = useState(true)
 
-  // 🔴 PANIC BUTTON ACTION
+  // 🔴 PANIC BUTTON
   const triggerPanic = async () => {
     try {
       await api.post("/panic")
-      const alertsResponse = await api.get("/alerts")
-      setAlerts(alertsResponse.data)
     } catch (error) {
-      console.error("Failed to send panic alert:", error)
+      console.error("Panic failed:", error)
     }
   }
 
-  // 🔁 FETCH DATA ON LOAD
+  // 🔁 AUTO REFRESH DATA
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -39,13 +37,16 @@ export default function Page() {
         setAlerts(alertsResponse.data)
         setRoute(routeResponse.data)
       } catch (error) {
-        console.error("Failed to fetch data:", error)
+        console.error("Fetch error:", error)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchData()
+    fetchData() // initial load
+    const interval = setInterval(fetchData, 5000) // every 5 sec
+
+    return () => clearInterval(interval) // cleanup
   }, [])
 
   if (loading) {
@@ -64,7 +65,7 @@ export default function Page() {
         🚨 PANIC
       </button>
 
-      {/* PANIC ALERTS */}
+      {/* ALERTS */}
       <section>
         <h2 className="text-xl font-semibold">Panic Alerts</h2>
         {alerts.length === 0 ? (
@@ -81,7 +82,7 @@ export default function Page() {
         )}
       </section>
 
-      {/* EMERGENCY ROUTE */}
+      {/* ROUTE */}
       <section>
         <h2 className="text-xl font-semibold">Emergency Route</h2>
         {route.length === 0 ? (
