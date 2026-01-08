@@ -5,7 +5,7 @@ import api from "@/lib/api"
 
 type Alert = {
   message: string
-  level?: string
+  level: "HIGH" | "MEDIUM" | "LOW"
 }
 
 type RoutePoint = {
@@ -18,7 +18,6 @@ export default function Page() {
   const [route, setRoute] = useState<RoutePoint[]>([])
   const [loading, setLoading] = useState(true)
 
-  // 🔴 PANIC BUTTON
   const triggerPanic = async () => {
     try {
       await api.post("/panic")
@@ -27,15 +26,14 @@ export default function Page() {
     }
   }
 
-  // 🔁 AUTO REFRESH DATA
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const alertsResponse = await api.get("/alerts")
-        const routeResponse = await api.get("/route")
+        const alertsRes = await api.get("/alerts")
+        const routeRes = await api.get("/route")
 
-        setAlerts(alertsResponse.data)
-        setRoute(routeResponse.data)
+        setAlerts(alertsRes.data)
+        setRoute(routeRes.data)
       } catch (error) {
         console.error("Fetch error:", error)
       } finally {
@@ -43,11 +41,16 @@ export default function Page() {
       }
     }
 
-    fetchData() // initial load
-    const interval = setInterval(fetchData, 5000) // every 5 sec
-
-    return () => clearInterval(interval) // cleanup
+    fetchData()
+    const interval = setInterval(fetchData, 5000)
+    return () => clearInterval(interval)
   }, [])
+
+  const getAlertStyle = (level: string) => {
+    if (level === "HIGH") return "bg-red-100 text-red-800 border-red-400"
+    if (level === "MEDIUM") return "bg-orange-100 text-orange-800 border-orange-400"
+    return "bg-green-100 text-green-800 border-green-400"
+  }
 
   if (loading) {
     return <div className="p-6">Loading PANIC-AID dashboard...</div>
@@ -57,7 +60,6 @@ export default function Page() {
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">🚨 PANIC-AID Dashboard</h1>
 
-      {/* PANIC BUTTON */}
       <button
         onClick={triggerPanic}
         className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-bold"
@@ -65,24 +67,23 @@ export default function Page() {
         🚨 PANIC
       </button>
 
-      {/* ALERTS */}
       <section>
         <h2 className="text-xl font-semibold">Panic Alerts</h2>
+
         {alerts.length === 0 ? (
           <p className="text-gray-500">No active alerts</p>
         ) : (
           alerts.map((alert, index) => (
             <div
               key={index}
-              className="mt-2 p-3 border rounded bg-red-50 text-red-800"
+              className={`mt-3 p-4 border rounded ${getAlertStyle(alert.level)}`}
             >
-              {alert.message}
+              <strong>{alert.level}</strong> — {alert.message}
             </div>
           ))
         )}
       </section>
 
-      {/* ROUTE */}
       <section>
         <h2 className="text-xl font-semibold">Emergency Route</h2>
         {route.length === 0 ? (
