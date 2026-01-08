@@ -18,30 +18,26 @@ app.get("/api/health", (req, res) => {
 
 //  Panic alerts API
 app.get("/api/alerts", (req, res) => {
-  const alerts = [
+  res.json([
     {
-      message: "High crowd density detected near Gate 3",
-      level: "HIGH"
-    },
-    {
-      message: "Sudden movement spike near Exit A",
-      level: "MEDIUM"
+      id: 1,
+      type: "Panic Button",
+      location: "Sector 21, Delhi",
+      time: "2 mins ago"
     }
-  ]
+  ]);
+});
 
-  res.json(alerts)
-})
 
 //  Emergency route API
 app.get("/api/route", (req, res) => {
-  const route = [
+  res.json([
     { lat: 28.6139, lng: 77.2090 },
     { lat: 28.6145, lng: 77.2102 },
     { lat: 28.6152, lng: 77.2120 }
-  ]
+  ]);
+});
 
-  res.json(route)
-})
 
 // ▶ Start server
 app.get("/", (req, res) => {
