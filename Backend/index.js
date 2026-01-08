@@ -19,6 +19,30 @@ app.get("/api/alerts", (req, res) => {
   ])
 })
 
+let alerts = []
+
+app.post("/api/alerts", (req, res) => {
+  const { message, level } = req.body
+
+  if (!message) {
+    return res.status(400).json({ error: "Message is required" })
+  }
+
+  const alert = {
+    message,
+    level: level || "high",
+    time: new Date().toISOString()
+  }
+
+  alerts.unshift(alert)
+  res.status(201).json(alert)
+})
+
+app.get("/api/alerts", (req, res) => {
+  res.json(alerts)
+})
+
+
 app.get("/api/route", (req, res) => {
   res.json([
     { lat: 28.6139, lng: 77.2090 },
