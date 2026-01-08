@@ -14,7 +14,7 @@ type RoutePoint = {
   lng: number
 }
 
-// ✅ Leaflet map loaded ONLY on client (fixes window error)
+// Load Leaflet map only on client
 const RouteMap = dynamic(
   () => import("@/components/RouteMap"),
   { ssr: false }
@@ -43,6 +43,20 @@ export default function Page() {
     fetchData()
   }, [])
 
+  const triggerPanic = async () => {
+    try {
+      await api.post("/alerts", {
+        message: "🚨 PANIC triggered by user",
+        level: "high",
+      })
+
+      const res = await api.get("/alerts")
+      setAlerts(res.data)
+    } catch (err) {
+      console.error("Failed to trigger panic", err)
+    }
+  }
+
   if (loading) {
     return (
       <div className="p-6 text-gray-400">
@@ -51,63 +65,44 @@ export default function Page() {
     )
   }
 
-  const triggerPanic = async () => {
-  try {
-    await api.post("/alerts", {
-      message: "🚨 PANIC triggered by user",
-      level: "high"
-    })
+  return (
+    <div className="p-6 space-y-6">
+      <h1 className="text-2xl font-bold">🚨 PANIC-AID Dashboard</h1>
 
-    const res = await api.get("/alerts")
-    setAlerts(res.data)
-  } catch (err) {
-    console.error("Failed to trigger panic", err)
-  }
+      {/* 🚨 PANIC BUTTON */}
+      <button
+        onClick={triggerPanic}
+        className="bg-red-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-red-700 w-fit"
+      >
+        🚨 PANIC
+      </button>
+
+      {/* 🔔 Panic Alerts */}
+      <section>
+        <h2 className="text-xl font-semibold">Panic Alerts</h2>
+        {alerts.length === 0 ? (
+          <p className="text-gray-500">No active alerts</p>
+        ) : (
+          alerts.map((alert, index) => (
+            <div
+              key={index}
+              className="mt-2 p-3 border rounded bg-red-50 text-red-800"
+            >
+              {alert.message}
+            </div>
+          ))
+        )}
+      </section>
+
+      {/* 🗺️ Emergency Route */}
+      <section>
+        <h2 className="text-xl font-semibold">Emergency Route</h2>
+        {route.length === 0 ? (
+          <p className="text-gray-500">No route available</p>
+        ) : (
+          <RouteMap route={route} />
+        )}
+      </section>
+    </div>
+  )
 }
-
-
- return (
-  <div className="p-6 space-y-6">
-    <h1 className="text-2xl font-bold">🚨 PANIC-AID Dashboard</h1>
-
-    {/* 🚨 PANIC BUTTON */}
-    <button
-      onClick={triggerPanic}
-      className="bg-red-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-red-700 w-fit"
-    >
-      🚨 PANIC
-    </button>
-
-    {/* 🔔 Panic Alerts */}
-    <section>
-      <h2 className="text-xl font-semibold">Panic Alerts</h2>
-      {alerts.length === 0 ? (
-        <p className="text-gray-500">No active alerts</p>
-      ) : (
-        alerts.map((alert, index) => (
-          <div
-            key={index}
-            className="mt-2 p-3 border rounded bg-red-50 text-red-800"
-          >
-            {alert.message}
-          </div>
-        ))
-      )}
-    </section>
-
-    {/* 🗺️ Emergency Route */}
-    <section>
-      <h2 className="text-xl font-semibold">Emergency Route</h2>
-      {route.length === 0 ? (
-        <p className="text-gray-500">No route available</p>
-      ) : (
-        <RouteMap route={route} />
-      )}
-    </section>
-  </div>
-)
-}
-
-
-
-
