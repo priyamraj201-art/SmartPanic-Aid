@@ -12,7 +12,11 @@ app.get("/", (req, res) => {
 })
 
 app.get("/api/alerts", (req, res) => {
-  res.json([])
+  res.json([
+    { message: "Crowd panic detected near Gate 3", level: "HIGH" },
+    { message: "Movement spike at Exit A", level: "MEDIUM" },
+    { message: "Normal crowd flow", level: "LOW" }
+  ])
 })
 
 app.get("/api/route", (req, res) => {
