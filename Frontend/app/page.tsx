@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import api from "@/lib/api"
+import { MapContainer, TileLayer, Polyline, Marker } from "react-leaflet"
 
 type Alert = {
   message: string
@@ -19,26 +20,17 @@ export default function Page() {
   const [loading, setLoading] = useState(true)
 
   const triggerPanic = async () => {
-    try {
-      await api.post("/panic")
-    } catch (error) {
-      console.error("Panic failed:", error)
-    }
+    await api.post("/panic")
   }
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const alertsRes = await api.get("/alerts")
-        const routeRes = await api.get("/route")
+      const alertsRes = await api.get("/alerts")
+      const routeRes = await api.get("/route")
 
-        setAlerts(alertsRes.data)
-        setRoute(routeRes.data)
-      } catch (error) {
-        console.error("Fetch error:", error)
-      } finally {
-        setLoading(false)
-      }
+      setAlerts(alertsRes.data)
+      setRoute(routeRes.data)
+      setLoading(false)
     }
 
     fetchData()
@@ -52,9 +44,7 @@ export default function Page() {
     return "bg-green-100 text-green-800 border-green-400"
   }
 
-  if (loading) {
-    return <div className="p-6">Loading PANIC-AID dashboard...</div>
-  }
+  if (loading) return <div className="p-6">Loading dashboard...</div>
 
   return (
     <div className="p-6 space-y-6">
@@ -67,15 +57,15 @@ export default function Page() {
         🚨 PANIC
       </button>
 
+      {/* ALERTS */}
       <section>
         <h2 className="text-xl font-semibold">Panic Alerts</h2>
-
         {alerts.length === 0 ? (
           <p className="text-gray-500">No active alerts</p>
         ) : (
-          alerts.map((alert, index) => (
+          alerts.map((alert, i) => (
             <div
-              key={index}
+              key={i}
               className={`mt-3 p-4 border rounded ${getAlertStyle(alert.level)}`}
             >
               <strong>{alert.level}</strong> — {alert.message}
@@ -84,18 +74,29 @@ export default function Page() {
         )}
       </section>
 
+      {/* MAP */}
       <section>
-        <h2 className="text-xl font-semibold">Emergency Route</h2>
-        {route.length === 0 ? (
-          <p className="text-gray-500">No route available</p>
-        ) : (
-          <ul className="list-disc ml-6">
-            {route.map((point, index) => (
-              <li key={index}>
-                Lat: {point.lat}, Lng: {point.lng}
-              </li>
+        <h2 className="text-xl font-semibold">Emergency Route Map</h2>
+
+        {route.length > 0 && (
+          <MapContainer
+            center={[route[0].lat, route[0].lng]}
+            zoom={15}
+            style={{ height: "400px", width: "100%" }}
+          >
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+
+            <Polyline
+              positions={route.map(p => [p.lat, p.lng])}
+              color="red"
+            />
+
+            {route.map((p, i) => (
+              <Marker key={i} position={[p.lat, p.lng]} />
             ))}
-          </ul>
+          </MapContainer>
         )}
       </section>
     </div>
