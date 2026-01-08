@@ -26,3 +26,19 @@ app.get("/api/route", (req, res) => {
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Backend running on port ${PORT}`)
 })
+let panicAlerts = [];
+
+app.post("/api/panic", (req, res) => {
+  const alert = {
+    id: Date.now(),
+    message: "🚨 Panic alert triggered!",
+    time: new Date().toISOString(),
+  };
+
+  panicAlerts.push(alert);
+  res.json({ success: true, alert });
+});
+
+app.get("/api/alerts", (req, res) => {
+  res.json(panicAlerts);
+});
